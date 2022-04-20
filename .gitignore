@@ -1,0 +1,13 @@
+bin/
+*MUNGED*/
+
+# Munge tools and their outputs
+*.bat
+*.exe
+*.log
+*.sh
+*.txt
+
+# Munged files
+*.lvl
+*.req
