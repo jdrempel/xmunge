@@ -5,6 +5,7 @@
 
 
 from argparse import ArgumentParser
+import logging as log
 
 
 class ArgumentValidator:
@@ -43,6 +44,7 @@ class ArgumentValidator:
 
 
 if __name__ == "__main__":
+
     # Parse arguments
     parser = ArgumentParser()
     parser.add_argument("--platform", nargs="?", type=str, default="PC")
@@ -55,24 +57,50 @@ if __name__ == "__main__":
     parser.add_argument("--shell", action="store_true")
     parser.add_argument("--movies", action="store_true")
     parser.add_argument("--localize", action="store_true")
-    parser.add_argument("--noxboxcopy", dest="no_xbox", action="store_true")
+    parser.add_argument("--noxboxcopy", action="store_true", dest="no_xbox")
 
     args = parser.parse_args()
 
     validator = ArgumentValidator(args)
     validator.validate_args()
 
+    logger = log.getLogger("main")
+    logger.setLevel(log.DEBUG)
+    formatter = log.Formatter(fmt="%(asctime)s [%(levelname)s]:  %(message)s",
+                              datefmt="%Y-%m-%d %H:%M:%S")
+
+    log_filename = f"{args.platform.upper()}_MungeLog.txt"
+    file_handler = log.FileHandler(log_filename, "w")
+    file_handler.setLevel(log.INFO)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+    console_handler = log.StreamHandler()
+    console_handler.setLevel(log.DEBUG)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+
     munge_all = True
     munge_list = vars(args)
     munge_list.pop("platform")
     munge_list.pop("language")
     munge_list.pop("no_xbox")
-
-    print(munge_list)
-    if any([v for k, v in munge_list.items() if not v == "NOTHING"]):
+    if any(munge_list.values()):
         munge_all = False
 
-    print(munge_all)
+    logger.debug("munge_all %d", munge_all)
+
     # Post process
+    if munge_all:
+        munge_list["worlds"] = ["EVERYTHING"]
+        munge_list["sides"] = ["EVERYTHING"]
+        munge_list["load"] = True
+        munge_list["sides"] = True
+        munge_list["common"] = True
+        munge_list["shell"] = True
+        munge_list["movies"] = True
+        munge_list["localize"] = True
+        munge_list["sound"] = True
+
     # Setup logging
     # Munge!
