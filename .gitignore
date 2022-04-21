@@ -1,3 +1,4 @@
+.idea/
 bin/
 *MUNGED*/
 
@@ -11,3 +12,6 @@ bin/
 # Munged files
 *.lvl
 *.req
+
+# Poetry
+poetry.lock
