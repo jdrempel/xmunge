@@ -8,6 +8,25 @@ from argparse import ArgumentParser
 import logging as log
 
 
+def setup_logging():
+
+    logger = log.getLogger("main")
+    logger.setLevel(log.DEBUG)
+    formatter = log.Formatter(fmt="%(asctime)s [%(levelname)s]:  %(message)s",
+                              datefmt="%Y-%m-%d %H:%M:%S")
+
+    log_filename = f"{args.platform.upper()}_MungeLog.txt"
+    file_handler = log.FileHandler(log_filename, "w")
+    file_handler.setLevel(log.INFO)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+    console_handler = log.StreamHandler()
+    console_handler.setLevel(log.DEBUG)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+
+
 class ArgumentValidator:
 
     platforms = [
@@ -64,21 +83,7 @@ if __name__ == "__main__":
     validator = ArgumentValidator(args)
     validator.validate_args()
 
-    logger = log.getLogger("main")
-    logger.setLevel(log.DEBUG)
-    formatter = log.Formatter(fmt="%(asctime)s [%(levelname)s]:  %(message)s",
-                              datefmt="%Y-%m-%d %H:%M:%S")
-
-    log_filename = f"{args.platform.upper()}_MungeLog.txt"
-    file_handler = log.FileHandler(log_filename, "w")
-    file_handler.setLevel(log.INFO)
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
-
-    console_handler = log.StreamHandler()
-    console_handler.setLevel(log.DEBUG)
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
+    setup_logging()
 
     munge_all = True
     munge_list = vars(args)
@@ -88,7 +93,7 @@ if __name__ == "__main__":
     if any(munge_list.values()):
         munge_all = False
 
-    logger.debug("munge_all %d", munge_all)
+    log.getLogger("main").debug("munge_all %d", munge_all)
 
     # Post process
     if munge_all:
