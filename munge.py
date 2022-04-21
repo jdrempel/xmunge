@@ -6,8 +6,9 @@
 from argparse import ArgumentParser
 from pathlib import Path
 
+from utils.globals import Settings
 from utils.logging import setup_logging
-from utils.mungers import SideMunger, WorldMunger
+from utils.mungers import CommonMunger, LoadMunger, ShellMunger, SideMunger, SoundMunger, WorldMunger
 from utils.validators import ArgumentValidator
 
 
@@ -35,6 +36,8 @@ if __name__ == "__main__":
     validator = ArgumentValidator(args)
     validator.validate_args()
 
+    Settings.set_platform(args.platform.upper())
+
     munge_all = True
     munge_list = dict(vars(args))
     munge_list.pop("platform")
@@ -50,8 +53,6 @@ if __name__ == "__main__":
     # Post processing #
     ###################
 
-    munge_platform = args.platform.upper()
-
     if munge_all:
         munge_list["worlds"] = ["EVERYTHING"]
         munge_list["sides"] = ["EVERYTHING"]
@@ -63,52 +64,47 @@ if __name__ == "__main__":
         munge_list["sound"] = True
 
     # Language stuff
-    munge_lang_ver = "ENGLISH"
-    munge_lang_dir = "ENG"
-    munge_override_path = None
-
     if args.language is not None:
-        munge_platform = args.language.upper()
-        munge_lang_dir = munge_platform
-        munge_lang_ver = munge_platform
+        Settings.platform = args.language.upper()
+        Settings.lang_dir = Settings.platform
+        Settings.lang_version = Settings.platform
 
-        if munge_platform == "ENGLISH":
-            munge_lang_dir = "ENG"
-            munge_lang_ver = ""
-        elif munge_platform == "UK":
-            munge_lang_dir = "UK_"
-            munge_lang_ver = munge_lang_dir
+        if Settings.platform == "ENGLISH":
+            Settings.lang_dir = "ENG"
+            Settings.lang_version = ""
+        elif Settings.platform == "UK":
+            Settings.lang_dir = "UK_"
+            Settings.lang_version = Settings.lang_dir
 
-    if munge_lang_ver != "ENGLISH":
-        munge_override_path = Path(f"{munge_platform}_{munge_lang_dir}")
+    if Settings.lang_version != "ENGLISH":
+        Settings.override_path = Path(f"{Settings.platform}_{Settings.lang_dir}")
 
     ##########
     # Munge! #
     ##########
 
-    munge_bin_path = Path("../../ToolsFL/bin")
-
     if munge_list["common"]:
-        pass
+        munger = CommonMunger(Settings.platform)
 
     if munge_list["shell"]:
-        pass
+        munger = ShellMunger(Settings.platform)
 
     if munge_list["load"]:
-        pass
+        munger = LoadMunger(Settings.platform)
 
     if munge_list["sides"]:
         for side in munge_list["sides"]:
-            munger = SideMunger(side, munge_platform)
+            munger = SideMunger(side, Settings.platform)
 
     if munge_list["worlds"]:
         for world in munge_list["worlds"]:
-            munger = WorldMunger(world, munge_platform)
+            munger = WorldMunger(world, Settings.platform)
 
     if munge_list["sound"]:
-        pass
+        munge_sound_streams = True
+        munger = SoundMunger(Settings.platform, munge_sound_streams)
 
-    if munge_platform == "XBOX" and not args.no_xbox_copy:
+    if Settings.platform == "XBOX" and not args.no_xbox_copy:
         pass
 
     # Done!
