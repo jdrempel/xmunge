@@ -18,7 +18,7 @@ if __name__ == "__main__":
     ###################
 
     parser = ArgumentParser()
-    parser.add_argument("--platform", nargs="?", type=str, default="PC", const="PC")
+    parser.add_argument("--platform", nargs="?", type=str, default="PC")
     parser.add_argument("--language", nargs="?", type=str)
     parser.add_argument("--world", nargs="+", type=str, dest="worlds")
     parser.add_argument("--side", nargs="+", type=str, dest="sides")
