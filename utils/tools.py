@@ -6,14 +6,16 @@ from globals import Settings
 
 def _setup_wine() -> str:
     """
-    Configures the WINEPATH to include the BF2_ModTools/ToolsFL/bin directory
-    :return: A string of the format: "WINEPATH=<path-to-tools-bin> wine"
+    Configures the WINEPATH to include the BF2_ModTools/ToolsFL/bin directory and sets the WINEPREFIX if it exists in
+    Settings
+    :return: A string of the format: "[WINEPREFIX=<prefix-path> ]WINEPATH=<path-to-tools-bin> wine"
     """
-    abs_current_dir = Path(".").resolve()
+    current_dir = Path(".")
+    tools_dir = current_dir / Settings.bin_path
     wine_str = ""
     if Settings.wine_prefix:
         wine_str = f"WINEPREFIX={Settings.wine_prefix} "
-    wine_str = f"{wine_str}WINEPATH={abs_current_dir} wine"
+    wine_str = f"{wine_str}WINEPATH={tools_dir.resolve()} wine"
     return wine_str
 
 
@@ -21,6 +23,7 @@ def level_pack(input_files: list[str], source_dir: str, output_dir: str, input_d
                common: list[str] = None, write_files: list[str] = None, debug: bool = False) -> None:
     """
     Invokes LevelPack.exe in Wine with the specified parameters
+    :raise CalledProcessError: If the return status of LevelPack.exe or wine is non-zero
     :param input_files: The list of files or glob patterns to pass as inputs
     :param source_dir: The directory from which to load un-processed source files
     :param output_dir: The directory in which to place packed .lvl files
@@ -66,8 +69,8 @@ def level_pack(input_files: list[str], source_dir: str, output_dir: str, input_d
         " ".join(command),
         f"2>>{Settings.platform}_MungeLog.txt"
     ]
-    result = sp.run(args, shell=True)
-    print(result.returncode)
+    result = sp.run(" ".join(args), shell=True)
+    result.check_returncode()
 
 
 def bin_munge():
@@ -139,8 +142,8 @@ def world_munge():
 
 
 if __name__ == "__main__":
-    Settings.wine_prefix = Path(".") / ".." / ".." / "ToolsFL" / "bin"
-    Settings.wine_prefix = Settings.wine_prefix.resolve()
+    # Settings.wine_prefix = Path(".") / ".." / ".." / "ToolsFL" / "bin"
+    # Settings.wine_prefix = Settings.wine_prefix.resolve()
     Settings.set_platform("PC")
     level_pack(["a", "b", "c"], "source", "output", input_dir="inputdir", common=["com1", "../com2"],
                write_files=["write1", "write2"], debug=True)
