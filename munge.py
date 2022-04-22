@@ -19,6 +19,8 @@ if __name__ == "__main__":
     ###################
 
     parser = ArgumentParser()
+
+    # "Built-in" arguments (from old munge.bat)
     parser.add_argument("--platform", nargs="?", type=str, default="PC")
     parser.add_argument("--language", nargs="?", type=str)
     parser.add_argument("--world", nargs="+", type=str, dest="worlds")
@@ -31,7 +33,13 @@ if __name__ == "__main__":
     parser.add_argument("--localize", action="store_true")
     parser.add_argument("--noxboxcopy", action="store_true", dest="no_xbox_copy")
 
+    # "Add-on" arguments (for convenience)
+    parser.add_argument("--wine-prefix", nargs="?", type=str)
+
     args = parser.parse_args()
+
+    if args.wine_prefix:
+        Settings.wine_prefix = args.wine_prefix
 
     validator = ArgumentValidator(args)
     validator.validate_args()

@@ -20,8 +20,15 @@ class Settings:
     munge_args = None
     shader_munge_args = None
 
+    wine_prefix = None
+
     @classmethod
-    def set_platform(cls, platform):
+    def set_platform(cls, platform: str) -> None:
+        """
+        Class method for setting the platform and updating all other members that rely on the platform value.
+        :param platform: A string, either "PC", "PS2", or "XBOX"
+        :return: None
+        """
         cls.platform = platform.upper()
 
         cls.munge_dir = Path(f"MUNGED/{cls.platform}")

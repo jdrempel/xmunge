@@ -1,9 +1,35 @@
+from pathlib import Path
 import subprocess as sp
 
 from globals import Settings
 
 
-def level_pack(input_files, source_dir, output_dir, input_dir=None, common=None, write_files=None):
+def _setup_wine() -> str:
+    """
+    Configures the WINEPATH to include the BF2_ModTools/ToolsFL/bin directory
+    :return: A string of the format: "WINEPATH=<path-to-tools-bin> wine"
+    """
+    abs_current_dir = Path(".").resolve()
+    wine_str = ""
+    if Settings.wine_prefix:
+        wine_str = f"WINEPREFIX={Settings.wine_prefix} "
+    wine_str = f"{wine_str}WINEPATH={abs_current_dir} wine"
+    return wine_str
+
+
+def level_pack(input_files: list[str], source_dir: str, output_dir: str, input_dir: str = None,
+               common: list[str] = None, write_files: list[str] = None, debug: bool = False) -> None:
+    """
+    Invokes LevelPack.exe in Wine with the specified parameters
+    :param input_files: The list of files or glob patterns to pass as inputs
+    :param source_dir: The directory from which to load un-processed source files
+    :param output_dir: The directory in which to place packed .lvl files
+    :param input_dir: (Optional) The directory from which to load pre-processed source files
+    :param common: (Optional) A list of files from which to draw common info
+    :param write_files: (Optional) A list of non-lvl artifact files to be written
+    :param debug: (Optional) If True, starts LevelPack.exe with the -DEBUG flag
+    :return: None
+    """
     inputs = input_files
     if isinstance(input_files, list):
         inputs = " ".join(input_files)
@@ -15,7 +41,8 @@ def level_pack(input_files, source_dir, output_dir, input_dir=None, common=None,
         f"-inputfile {inputs}",
         f"-outputdir {output_dir}",
         f"-inputdir {inputdir}",
-        f"-sourcedir {source_dir}"
+        f"-sourcedir {source_dir}",
+        Settings.munge_args
     ]
 
     if common:
@@ -31,16 +58,16 @@ def level_pack(input_files, source_dir, output_dir, input_dir=None, common=None,
     if write_files:
         command.append(f"-writefiles {Settings.munge_dir}/{f' {Settings.munge_dir}/'.join(write_files)}")
 
+    if debug:
+        command.append("-debug")
+
     args = [
-        "wine",
+        _setup_wine(),
         " ".join(command),
-        "2>>PC_MungeLog.txt"
+        f"2>>{Settings.platform}_MungeLog.txt"
     ]
-    print(args)
-
-
-Settings.set_platform("PC")
-level_pack(["a", "b", "c"], "source", "output", "inputdir", ["com1", "../com2"], ["write1", "write2"])
+    result = sp.run(args, shell=True)
+    print(result.returncode)
 
 
 def bin_munge():
@@ -109,3 +136,11 @@ def terrain_munge():
 
 def world_munge():
     pass
+
+
+if __name__ == "__main__":
+    Settings.wine_prefix = Path(".") / ".." / ".." / "ToolsFL" / "bin"
+    Settings.wine_prefix = Settings.wine_prefix.resolve()
+    Settings.set_platform("PC")
+    level_pack(["a", "b", "c"], "source", "output", input_dir="inputdir", common=["com1", "../com2"],
+               write_files=["write1", "write2"], debug=True)
