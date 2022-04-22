@@ -73,6 +73,17 @@ def level_pack(input_files: list[str], source_dir: str, output_dir: str, input_d
     result.check_returncode()
 
 
+def _munge(source: str):
+    command = []
+    args = [
+        _setup_wine(),
+        " ".join(command),
+        f"2>>{Settings.platform}_MungeLog.txt"
+    ]
+    result = sp.run(args, shell=True)
+    pass
+
+
 def bin_munge():
     pass
 
