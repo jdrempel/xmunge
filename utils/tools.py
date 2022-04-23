@@ -1,7 +1,9 @@
+import logging as log
 from pathlib import Path
 import subprocess as sp
 
 from globals import Settings
+from logs import setup_logging
 
 
 def _setup_wine() -> str:
@@ -19,11 +21,26 @@ def _setup_wine() -> str:
     return wine_str
 
 
+def _exec_wine(command: list[str]) -> None:
+    """
+    Invokes Wine with the executable and parameters specified in the command list
+    :raise CalledProcessError: If the return status of the executable or Wine is non-zero
+    :param command: The list of strings for the executable and its arguments
+    :return: None
+    """
+    args = [
+        _setup_wine(),
+        " ".join(command),
+        f"2>>{Settings.platform}_MungeLog.txt"
+    ]
+    result = sp.run(" ".join(args), shell=True)
+    result.check_returncode()
+
+
 def level_pack(input_files: list[str], source_dir: str, output_dir: str, input_dir: str = None,
                common: list[str] = None, write_files: list[str] = None, debug: bool = False) -> None:
     """
     Invokes LevelPack.exe in Wine with the specified parameters
-    :raise CalledProcessError: If the return status of LevelPack.exe or Wine is non-zero
     :param input_files: The list of files or glob patterns to pass as inputs
     :param source_dir: The directory from which to load un-processed source files
     :param output_dir: The directory in which to place packed .lvl files
@@ -64,13 +81,11 @@ def level_pack(input_files: list[str], source_dir: str, output_dir: str, input_d
     if debug:
         command.append("-debug")
 
-    args = [
-        _setup_wine(),
-        " ".join(command),
-        f"2>>{Settings.platform}_MungeLog.txt"
-    ]
-    result = sp.run(" ".join(args), shell=True)
-    result.check_returncode()
+    try:
+        _exec_wine(command)
+    except sp.CalledProcessError as err:
+        logger = log.getLogger("main")
+        logger.error("LevelPack failed with args \"%s\"; Status %d.", " ".join(command[1:]), err.returncode)
 
 
 def _munge(category: str, input_files: list[str], source_dir: str = None, output_dir: str = None) -> None:
@@ -101,13 +116,11 @@ def _munge(category: str, input_files: list[str], source_dir: str = None, output
 
     # TODO hashing
 
-    args = [
-        _setup_wine(),
-        " ".join(command),
-        f"2>>{Settings.platform}_MungeLog.txt"
-    ]
-    result = sp.run(args, shell=True)
-    result.check_returncode()
+    try:
+        _exec_wine(command)
+    except sp.CalledProcessError as err:
+        logger = log.getLogger("main")
+        logger.error("%s failed with args \"%s\"; Status %d.", command[0], " ".join(command[1:]), err.returncode)
 
 
 def bin_munge():
@@ -182,5 +195,7 @@ if __name__ == "__main__":
     # Settings.wine_prefix = Path(".") / ".." / ".." / "ToolsFL" / "bin"
     # Settings.wine_prefix = Settings.wine_prefix.resolve()
     Settings.set_platform("PC")
+    setup_logging("PC")
     level_pack(["a", "b", "c"], "source", "output", input_dir="inputdir", common=["com1", "../com2"],
                write_files=["write1", "write2"], debug=True)
+    _munge("Config", ["*.mcfg", "*.sanm"])
