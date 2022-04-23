@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "_build"
+name = "xmunge"
 version = "0.1.0"
 description = ""
 authors = ["Jeremy Rempel <jeremy.rempel@usask.ca>"]
