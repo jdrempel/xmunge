@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 from utils.globals import Settings
-from utils.logging import setup_logging
+from utils.logs import setup_logging
 from utils.mungers import CommonMunger, LoadMunger, ShellMunger, SideMunger, SoundMunger, WorldMunger
 from utils.validators import ArgumentValidator
 
