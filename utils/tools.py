@@ -23,7 +23,7 @@ def level_pack(input_files: list[str], source_dir: str, output_dir: str, input_d
                common: list[str] = None, write_files: list[str] = None, debug: bool = False) -> None:
     """
     Invokes LevelPack.exe in Wine with the specified parameters
-    :raise CalledProcessError: If the return status of LevelPack.exe or wine is non-zero
+    :raise CalledProcessError: If the return status of LevelPack.exe or Wine is non-zero
     :param input_files: The list of files or glob patterns to pass as inputs
     :param source_dir: The directory from which to load un-processed source files
     :param output_dir: The directory in which to place packed .lvl files
@@ -73,15 +73,41 @@ def level_pack(input_files: list[str], source_dir: str, output_dir: str, input_d
     result.check_returncode()
 
 
-def _munge(source: str):
-    command = []
+def _munge(category: str, input_files: list[str], source_dir: str = None, output_dir: str = None) -> None:
+    """
+    Invokes <category>Munge.exe in Wine with the specified parameters
+    :raise CalledProcessError: If the return status of <category>Munge.exe or Wine is non-zero
+    :param category: One of "Bin", "Config", "Font", etc
+    :param input_files: A list of files or glob patterns to pass as input to the munge process
+    :param source_dir: (Optional) The directory from which to load un-processed source files
+    :param output_dir: (Optional) The directory in which to place the packed .lvl files
+    :return: None
+    """
+    inputs = input_files
+    if isinstance(input_files, list):
+        inputs = " ".join(input_files)
+
+    # TODO
+    source = source_dir if source_dir is not None else "SOURCE_DIR"
+    output = output_dir if output_dir is not None else "OUTPUT_DIR"
+
+    command = [
+        f"{category}Munge",
+        f"-inputfile {inputs}",
+        f"-sourcedir {source}",
+        f"-outputdir {output}",
+        Settings.munge_args
+    ]
+
+    # TODO hashing
+
     args = [
         _setup_wine(),
         " ".join(command),
         f"2>>{Settings.platform}_MungeLog.txt"
     ]
     result = sp.run(args, shell=True)
-    pass
+    result.check_returncode()
 
 
 def bin_munge():
