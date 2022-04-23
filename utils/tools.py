@@ -1,6 +1,8 @@
 import logging as log
+from shutil import move
 from pathlib import Path
 import subprocess as sp
+from typing import Union
 
 from globals import Settings
 from logs import setup_logging
@@ -37,8 +39,9 @@ def _exec_wine(command: list[str]) -> None:
     result.check_returncode()
 
 
-def level_pack(input_files: list[str], source_dir: str, output_dir: str, input_dir: str = None,
-               common: list[str] = None, write_files: list[str] = None, debug: bool = False) -> None:
+def level_pack(input_files: Union[str, list[str]], source_dir: Union[str, Path], output_dir: Union[str, Path],
+               input_dir: Union[str, Path] = None, common: Union[list[str], list[Path]] = None,
+               write_files: Union[list[str], list[Path]] = None, debug: bool = False) -> None:
     """
     Invokes LevelPack.exe in Wine with the specified parameters
     :param input_files: The list of files or glob patterns to pass as inputs
@@ -67,7 +70,7 @@ def level_pack(input_files: list[str], source_dir: str, output_dir: str, input_d
 
     if common:
         common_str = "-common"
-        for common_file in common:
+        for common_file in [f"{c}.files" for c in common]:
             if common_file.startswith("."):
                 common_str += f" {common_file}"
             else:
@@ -76,51 +79,75 @@ def level_pack(input_files: list[str], source_dir: str, output_dir: str, input_d
         command.append(common_str)
 
     if write_files:
-        command.append(f"-writefiles {Settings.munge_dir}/{f' {Settings.munge_dir}/'.join(write_files)}")
+        to_write = [f"{w}.files" for w in write_files]
+        command.append(f"-writefiles {Settings.munge_dir}/{f' {Settings.munge_dir}/'.join(to_write)}")
 
     if debug:
         command.append("-debug")
 
+    logger = log.getLogger("main")
+
     try:
         _exec_wine(command)
     except sp.CalledProcessError as err:
-        logger = log.getLogger("main")
         logger.error("LevelPack failed with args \"%s\"; Status %d.", " ".join(command[1:]), err.returncode)
 
+    try:
+        with open("LevelPack.log", "r") as levelpack_log:
+            log_contents = str(levelpack_log.read())
+            logger.info(log_contents)
+    except FileNotFoundError as err:
+        logger.warning("Log file %s not found, continuing...", err.filename)
 
-def _munge(category: str, input_files: list[str], source_dir: str = None, output_dir: str = None) -> None:
+
+def munge(category: str, input_files: Union[str, list[str]], source_dir: Union[str, Path],
+          output_dir: Union[str, Path], hash_strings: bool = False) -> None:
     """
     Invokes <category>Munge.exe in Wine with the specified parameters
-    :raise CalledProcessError: If the return status of <category>Munge.exe or Wine is non-zero
     :param category: One of "Bin", "Config", "Font", etc
     :param input_files: A list of files or glob patterns to pass as input to the munge process
-    :param source_dir: (Optional) The directory from which to load un-processed source files
-    :param output_dir: (Optional) The directory in which to place the packed .lvl files
+    :param source_dir: The directory from which to load un-processed source files
+    :param output_dir: The directory in which to place the packed .lvl files
+    :param hash_strings: (Optional) Flag determining whether strings in input files should be hashed during munge
     :return: None
     """
     inputs = input_files
     if isinstance(input_files, list):
         inputs = " ".join(input_files)
 
-    # TODO
-    source = source_dir if source_dir is not None else "SOURCE_DIR"
-    output = output_dir if output_dir is not None else "OUTPUT_DIR"
+    prefix = ""
+    if category in ["Model", "Shader", "Texture"]:
+        prefix = Settings.platform.lower() + "_"
 
     command = [
-        f"{category}Munge",
+        f"{prefix}{category}Munge",
         f"-inputfile {inputs}",
-        f"-sourcedir {source}",
-        f"-outputdir {output}",
+        f"-sourcedir {source_dir}",
+        f"-outputdir {output_dir}",
         Settings.munge_args
     ]
 
+    if category == "Shader":
+        command.append(f"-I {source_dir}/shaders/{Settings.platform}/")
+
     # TODO hashing
+    if hash_strings:
+        command.append("-hashstrings")
+
+    logger = log.getLogger("main")
 
     try:
         _exec_wine(command)
     except sp.CalledProcessError as err:
-        logger = log.getLogger("main")
         logger.error("%s failed with args \"%s\"; Status %d.", command[0], " ".join(command[1:]), err.returncode)
+
+    if category in ["Config", ]:
+        try:
+            with open(f"{category}Munge.log", "r") as munge_log:
+                log_contents = str(munge_log.read())
+                logger.info(log_contents)
+        except FileNotFoundError as err:
+            logger.warning("Log file %s not found, continuing...", err.filename)
 
 
 def bin_munge():
@@ -143,8 +170,11 @@ def movie_munge():
     pass
 
 
-def odf_munge():
-    pass
+def odf_munge(input_files: Union[str, list[str], Path, list[Path]], source: Union[str, Path], output: Union[str, Path]):
+    inputs = input_files
+    if isinstance(input_files, str):
+        inputs = [input_files, ]
+    munge("Odf", inputs, source_dir=source, output_dir=output)
 
 
 def path_munge():
