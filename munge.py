@@ -93,6 +93,7 @@ if __name__ == "__main__":
 
     if munge_list["common"]:
         munger = CommonMunger(Settings.platform)
+        munger.run()
 
     if munge_list["shell"]:
         munger = ShellMunger(Settings.platform)

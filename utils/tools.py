@@ -4,8 +4,8 @@ from pathlib import Path
 import subprocess as sp
 from typing import Union
 
-from globals import Settings
-from logs import setup_logging
+from .globals import Settings
+from .logs import setup_logging
 
 
 def _setup_wine() -> str:
@@ -59,6 +59,8 @@ def level_pack(input_files: Union[str, list[str]], source_dir: Union[str, Path],
 
     inputdir = input_dir if not None else Settings.munge_dir
 
+    source_subdir = source_dir.stem
+
     command = [
         "LevelPack",
         f"-inputfile {inputs}",
@@ -74,13 +76,13 @@ def level_pack(input_files: Union[str, list[str]], source_dir: Union[str, Path],
             if common_file.startswith("."):
                 common_str += f" {common_file}"
             else:
-                common_str += f" {Settings.munge_dir}/{common_file}"
+                common_str += f" {source_subdir}/{Settings.munge_dir}/{common_file}"
 
         command.append(common_str)
 
     if write_files:
         to_write = [f"{w}.files" for w in write_files]
-        command.append(f"-writefiles {Settings.munge_dir}/{f' {Settings.munge_dir}/'.join(to_write)}")
+        command.append(f"-writefiles {source_subdir}/{Settings.munge_dir}/{f' {source_subdir}/{Settings.munge_dir}/'.join(to_write)}")
 
     if debug:
         command.append("-debug")
@@ -88,6 +90,7 @@ def level_pack(input_files: Union[str, list[str]], source_dir: Union[str, Path],
     logger = log.getLogger("main")
 
     try:
+        logger.debug(" ".join(command))
         _exec_wine(command)
     except sp.CalledProcessError as err:
         logger.error("LevelPack failed with args \"%s\"; Status %d.", " ".join(command[1:]), err.returncode)
@@ -113,7 +116,10 @@ def munge(category: str, input_files: Union[str, list[str]], source_dir: Union[s
     """
     inputs = input_files
     if isinstance(input_files, list):
-        inputs = " ".join(input_files)
+        inputs = " ".join([f"'{file}'" for file in input_files])
+    else:
+        if not (input_files.startswith("'") and input_files.endswith("'")):
+            inputs = f"'{input_files}'"
 
     prefix = ""
     if category in ["Model", "Shader", "Texture"]:

@@ -1,11 +1,12 @@
 import logging
+import shutil
 from abc import ABC, abstractmethod
 from glob import iglob
 from pathlib import Path
 
-from globals import Settings
-from logs import setup_logging
-from tools import level_pack, munge, soundfl_munge
+from .globals import Settings
+from .logs import setup_logging
+from .tools import level_pack, munge, soundfl_munge
 
 
 class BaseMunger(ABC):
@@ -29,6 +30,8 @@ class CommonMunger(BaseMunger):
     Handles munging of common data.
     """
 
+    munge_temp_name = "MungeTemp"
+
     def __init__(self, platform="PC"):
         super().__init__("Common", platform)
 
@@ -39,23 +42,43 @@ class CommonMunger(BaseMunger):
         pass
 
     def _merge_localize_files(self):
-        pass
+        munge_temp = Path(self.munge_temp_name)
+        localize_path = self.source_dir / "Localize"
+        localize_platform_path = localize_path / self.platform
+        logger = logging.getLogger("main")
+        logger.info("Merge localization files...")
+        munge_temp.mkdir(parents=True, exist_ok=True)
+        for item in list(localize_platform_path.iterdir()) + list(localize_path.iterdir()):
+            if not item.is_file():
+                continue
+            if not item.suffix == ".cfg":
+                continue
+            contents = ""
+            with open(item, "r") as source_file:
+                contents = source_file.read()
+            with open(munge_temp / item.name.lower(), "a") as merged_file:
+                merged_file.write(contents)
+                logger.info("Merged %s", item.name)
 
     def _munge_localize(self):
-        pass
+        munge("Localize", "*.cfg", self.munge_temp_name, self.munge_dir)
+        shutil.rmtree(self.munge_temp_name)
 
     def run(self, localize: bool = True, shaders: bool = True, sprites: bool = True, fpm: bool = True):
         logger = logging.getLogger("main")
         logger.info("Munge Common...")
 
-        munge("Odf", "*.odf", self.source_dir, self.munge_dir)
-        munge("Config", "*.fx", self.source_dir, self.munge_dir)
-        munge("Config", "*.combo", self.source_dir, self.munge_dir)
-        munge("Script", "*.lua", self.source_dir, self.munge_dir)
-        munge("Config", "*.mcfg", self.source_dir, self.munge_dir)
-        munge("Config", "*.sanm", self.source_dir, self.munge_dir)
-        munge("Config", "*.hud", self.source_dir, self.munge_dir)
-        munge("Font", "*.fff", self.source_dir, self.munge_dir)
+        Settings.output_dir.mkdir(parents=True, exist_ok=True)
+        self.munge_dir.mkdir(parents=True, exist_ok=True)
+
+        munge("Odf", "$*.odf", self.source_dir, self.munge_dir)
+        munge("Config", "$*.fx", self.source_dir, self.munge_dir)
+        munge("Config", "$*.combo", self.source_dir, self.munge_dir)
+        munge("Script", "$*.lua", self.source_dir, self.munge_dir)
+        munge("Config", "$*.mcfg", self.source_dir, self.munge_dir)
+        munge("Config", "$*.sanm", self.source_dir, self.munge_dir)
+        munge("Config", "$*.hud", self.source_dir, self.munge_dir)
+        munge("Font", "$*.fff", self.source_dir, self.munge_dir)
         munge("Texture", ["$*.tga", "$*.pic"], self.source_dir, self.munge_dir)
         munge("Model", ["$effects/*.msh", "$MSHs/*.msh"], self.source_dir, self.munge_dir)
         if shaders is True and self.platform != "PS2":
