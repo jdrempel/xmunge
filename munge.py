@@ -105,6 +105,7 @@ if __name__ == "__main__":
 
     if munge_list["sides"]:
         sides_to_munge = munge_list["sides"]
+        # TODO detect whether Common and Sides/Common are already munged and if not, always munge them first
         if munge_list["sides"] == "EVERYTHING":
             sides_to_munge = [i.name for i in Path("../Sides").iterdir() if i.is_dir()]
         for side in sides_to_munge:
