@@ -1,5 +1,6 @@
 import logging as log
 from pathlib import Path
+from re import search
 import subprocess as sp
 from typing import Union
 
@@ -71,10 +72,11 @@ def level_pack(input_files: Union[str, list[str]], source_dir: Union[str, Path],
     Invokes LevelPack.exe in Wine with the specified parameters
     :param input_files: The list of files or glob patterns to pass as inputs
     :param source_dir: The directory from which to load un-processed source files
-    :param output_dir: The directory in which to place packed .lvl files
+    :param output_dir: (Optional) The directory in which to place packed .lvl files
     :param input_dir: (Optional) The directory from which to load pre-processed source files
     :param common: (Optional) A list of files from which to draw common info
     :param write_files: (Optional) A list of non-lvl artifact files to be written
+    :param relative_write: (Optional) If True, does not prepend write_files entries with source_subdir/munge_dir/
     :param debug: (Optional) If True, starts LevelPack.exe with the -DEBUG flag
     :return: None
     """
@@ -135,7 +137,8 @@ def level_pack(input_files: Union[str, list[str]], source_dir: Union[str, Path],
     try:
         with open("LevelPack.log", "r") as levelpack_log:
             log_contents = str(levelpack_log.read())
-            logger.info(log_contents)
+            if len(log_contents) > 70:
+                logger.info(log_contents)
     except FileNotFoundError as err:
         logger.warning("Log file %s not found, continuing...", err.filename)
 
@@ -192,9 +195,11 @@ def munge(category: str, input_files: Union[str, list[str]], source_dir: Union[s
         logger.error("%s failed with args \"%s\"; Status %d.", command[0], " ".join(command[1:]), err.returncode)
 
     try:
-        with open(f"{category}Munge.log", "r") as munge_log:
-            log_contents = f"[{inputs}]\n" + str(munge_log.read())
-            logger.info(log_contents)
+        with open(f"{prefix}{category}Munge.log", "r") as munge_log:
+            log_contents = str(munge_log.read())
+            if not (search(r"0\s+Errors", log_contents) and search(r"0\s+Warnings", log_contents)):
+                log_contents = f"[{inputs}]\n" + log_contents
+                logger.info(log_contents)
     except FileNotFoundError as err:
         logger.warning("Log file %s not found, continuing...", err.filename)
 
@@ -262,8 +267,10 @@ def world_munge(input_files: Union[str, list[str]], source_dir: Union[str, Path]
 
     try:
         with open(f"ConfigMunge.log", "r") as munge_log:
-            log_contents = f"[{inputs}]\n" + str(munge_log.read())
-            logger.info(log_contents)
+            log_contents = str(munge_log.read())
+            if not (search(r"0\s+Errors", log_contents) and search(r"0\s+Warnings", log_contents)):
+                log_contents = f"[{inputs}]\n" + log_contents
+                logger.info(log_contents)
     except FileNotFoundError as err:
         logger.warning("Log file %s not found, continuing...", err.filename)
 
