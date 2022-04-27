@@ -7,6 +7,7 @@ from pathlib import Path
 from .globals import Settings
 from .logs import setup_logging
 from .tools import level_pack, munge, soundfl_munge
+from .tools import get_dir_no_case as _
 
 
 class BaseMunger(ABC):
@@ -17,8 +18,8 @@ class BaseMunger(ABC):
 
     def __init__(self, source_subdir: str, platform: str = "PC"):
         self.platform: str = platform
-        self.source_dir = Path("..") / source_subdir
-        self.munge_dir = Path(source_subdir) / "MUNGED" / platform
+        self.source_dir = _(Path("..") / source_subdir)
+        self.munge_dir = _(Path(source_subdir) / "MUNGED" / platform)
 
     @abstractmethod
     def run(self, **kwargs):
@@ -41,7 +42,12 @@ class CommonMunger(BaseMunger):
     def _munge_fpm(self):
         pass
 
-    def _merge_localize_files(self):
+    def _merge_localize_files(self) -> None:
+        """
+        Helper method for iterating through each language of localization files and concatenating the contents of
+        those with identical (case-insensitive) names
+        :return: None
+        """
         munge_temp = Path(self.munge_temp_name)
         localize_path = self.source_dir / "Localize"
         localize_platform_path = localize_path / self.platform
@@ -59,10 +65,6 @@ class CommonMunger(BaseMunger):
             with open(munge_temp / item.name.lower(), "a") as merged_file:
                 merged_file.write(contents)
                 logger.info("Merged %s", item.name)
-
-    def _munge_localize(self):
-        munge("Localize", "*.cfg", self.munge_temp_name, self.munge_dir)
-        shutil.rmtree(self.munge_temp_name)
 
     def run(self, localize: bool = True, shaders: bool = True, sprites: bool = True, fpm: bool = True):
         logger = logging.getLogger("main")
@@ -84,11 +86,13 @@ class CommonMunger(BaseMunger):
         if shaders is True and self.platform != "PS2":
             munge("Shader", ["shaders/*.xml", "shaders/*.vsfrag"], self.source_dir, self.munge_dir)
 
-        common_sound_path = self.source_dir / "Sound"
+        common_sound_path = _(self.source_dir / "Sound")
         munge("Config", ["*.snd", "*.mus"], common_sound_path, self.munge_dir, hash_strings=True)
         for sfx in iglob(str(common_sound_path / "*.sfx")):
+            print(sfx)
             soundfl_munge()  # TODO
         for stm in iglob(str(common_sound_path / "*.stm")):
+            print(stm)
             soundfl_munge()  # TODO
 
         if sprites:
@@ -96,7 +100,8 @@ class CommonMunger(BaseMunger):
 
         if localize:
             self._merge_localize_files()
-            self._munge_localize()
+            munge("Localize", "*.cfg", self.munge_temp_name, self.munge_dir)
+            shutil.rmtree(self.munge_temp_name)
 
         level_pack("core.req", self.source_dir, Settings.output_dir, self.munge_dir, write_files=["core", ])
         level_pack("common.req", self.source_dir, Settings.output_dir, self.munge_dir, common=["core", ],
@@ -158,13 +163,48 @@ class SideMunger(BaseMunger):
     Handles munging of a single side.
     """
 
-    def __init__(self, side, platform="PC"):
-        super().__init__("Sides", platform)
+    def __init__(self, side: str, platform="PC"):
         self.side = side
+        super().__init__(f"Sides/{self.side}", platform)
+        self.output_dir = Settings.output_dir / "SIDE"
+
+    def _copy_premunged_files(self):
+        side_munged_dir = _(self.source_dir / "munged")
+        if not side_munged_dir.exists():
+            return
+        files = list(side_munged_dir.iterdir())
+        if len(files) > 0:
+            logger = logging.getLogger("main")
+            logger.info("Copying premunged files from %s", side_munged_dir)
+            for file in files:
+                shutil.copy(file, self.munge_dir)
+                logger.info("Copied %s", file.name)
 
     def run(self):
         logger = logging.getLogger("main")
         logger.info("Munge Sides/%s...", self.side)
+
+        self.munge_dir.mkdir(parents=True, exist_ok=True)
+
+        self._copy_premunged_files()
+
+        munge("Odf", "$*.odf", self.source_dir, self.munge_dir)
+        munge("Config", "$effects/*.fx", self.source_dir, self.munge_dir)
+        munge("Config", "$*.combo", self.source_dir, self.munge_dir)
+        munge("Model", "$*.msh", self.source_dir, self.munge_dir)
+        munge("Texture", ["$*.tga", "$*.pic"], self.source_dir, self.munge_dir)
+        munge("Config", ["*.snd", "*.mus"], self.source_dir / "Sound", self.munge_dir)
+
+        common_munge_dir = _(Path(f"Common/MUNGED/{self.platform}"))
+        sides_common_munge_dir = _(Path(f"Sides/Common/MUNGED/{self.platform}"))
+
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+
+        if self.side != "Common":
+            input_dirs = [self.munge_dir, sides_common_munge_dir, common_munge_dir]
+            common_files = [f"{common_munge_dir}/{file}" for file in ["core", "common", "ingame"]]
+            level_pack("req/*.req", self.source_dir, self.munge_dir, input_dir=input_dirs, common=common_files)
+            level_pack("*.req", self.source_dir, self.output_dir, input_dir=input_dirs)
 
 
 class WorldMunger(BaseMunger):

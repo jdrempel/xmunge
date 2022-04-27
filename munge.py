@@ -62,8 +62,8 @@ if __name__ == "__main__":
     ###################
 
     if munge_all:
-        munge_list["worlds"] = ["EVERYTHING"]
-        munge_list["sides"] = ["EVERYTHING"]
+        munge_list["worlds"] = "EVERYTHING"
+        munge_list["sides"] = "EVERYTHING"
         munge_list["load"] = True
         munge_list["common"] = True
         munge_list["shell"] = True
@@ -97,21 +97,32 @@ if __name__ == "__main__":
 
     if munge_list["shell"]:
         munger = ShellMunger(Settings.platform)
+        munger.run()
 
     if munge_list["load"]:
         munger = LoadMunger(Settings.platform)
+        munger.run()
 
     if munge_list["sides"]:
-        for side in munge_list["sides"]:
+        sides_to_munge = munge_list["sides"]
+        if munge_list["sides"] == "EVERYTHING":
+            sides_to_munge = [i.name for i in Path("../Sides").iterdir() if i.is_dir()]
+        for side in sides_to_munge:
             munger = SideMunger(side, Settings.platform)
+            munger.run()
 
     if munge_list["worlds"]:
-        for world in munge_list["worlds"]:
+        worlds_to_munge = munge_list["worlds"]
+        if munge_list["worlds"] == "EVERYTHING":
+            worlds_to_munge = [i.name for i in Path("../Worlds").iterdir() if i.is_dir()]
+        for world in worlds_to_munge:
             munger = WorldMunger(world, Settings.platform)
+            munger.run()
 
     if munge_list["sound"]:
         munge_sound_streams = True
         munger = SoundMunger(Settings.platform, munge_sound_streams)
+        munger.run()
 
     if Settings.platform == "XBOX" and not args.no_xbox_copy:
         pass

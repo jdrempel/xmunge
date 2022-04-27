@@ -1,11 +1,31 @@
 import logging as log
-from shutil import move
 from pathlib import Path
 import subprocess as sp
 from typing import Union
 
 from .globals import Settings
 from .logs import setup_logging
+
+
+def get_dir_no_case(dir_path: Path) -> Path:
+    """
+    Checks if a directory exists in given case, upper case, or lower case. If it exists, append the appropriate case to
+    a new path and continue for each part of the path.
+    :param dir_path: The path to check
+    :return: A path object with possibly case-modified parts
+    """
+    rebuilt_path = []
+    for part in dir_path.parts:
+        partial_path = Path("/".join(rebuilt_path)) / part.upper()
+        if partial_path.exists():
+            rebuilt_path.append(part.upper())
+            continue
+        partial_path = Path("/".join(rebuilt_path)) / part.lower()
+        if partial_path.exists():
+            rebuilt_path.append(part.lower())
+            continue
+        rebuilt_path.append(part)
+    return Path("/".join(rebuilt_path))
 
 
 def _setup_wine() -> str:
@@ -40,7 +60,7 @@ def _exec_wine(command: list[str]) -> None:
 
 
 def level_pack(input_files: Union[str, list[str]], source_dir: Union[str, Path], output_dir: Union[str, Path],
-               input_dir: Union[str, Path] = None, common: Union[list[str], list[Path]] = None,
+               input_dir: Union[str, Path, list[str], list[Path]] = None, common: Union[list[str], list[Path]] = None,
                write_files: Union[list[str], list[Path]] = None, debug: bool = False) -> None:
     """
     Invokes LevelPack.exe in Wine with the specified parameters
@@ -57,7 +77,9 @@ def level_pack(input_files: Union[str, list[str]], source_dir: Union[str, Path],
     if isinstance(input_files, list):
         inputs = " ".join(input_files)
 
-    inputdir = input_dir if not None else Settings.munge_dir
+    input_dirs = input_dir
+    if isinstance(input_dir, list):
+        input_dirs = " ".join([str(d) for d in input_dir])
 
     source_subdir = source_dir.stem
 
@@ -65,7 +87,7 @@ def level_pack(input_files: Union[str, list[str]], source_dir: Union[str, Path],
         "LevelPack",
         f"-inputfile {inputs}",
         f"-outputdir {output_dir}",
-        f"-inputdir {inputdir}",
+        f"-inputdir {input_dirs}",
         f"-sourcedir {source_dir}",
         Settings.munge_args
     ]
@@ -73,7 +95,7 @@ def level_pack(input_files: Union[str, list[str]], source_dir: Union[str, Path],
     if common:
         common_str = "-common"
         for common_file in [f"{c}.files" for c in common]:
-            if common_file.startswith("."):
+            if common_file.startswith(".") or common_file.startswith("Common"):
                 common_str += f" {common_file}"
             else:
                 common_str += f" {source_subdir}/{Settings.munge_dir}/{common_file}"
@@ -150,7 +172,7 @@ def munge(category: str, input_files: Union[str, list[str]], source_dir: Union[s
     if category in ["Config", ]:
         try:
             with open(f"{category}Munge.log", "r") as munge_log:
-                log_contents = str(munge_log.read())
+                log_contents = f"[{inputs}]\n" + str(munge_log.read())
                 logger.info(log_contents)
         except FileNotFoundError as err:
             logger.warning("Log file %s not found, continuing...", err.filename)
