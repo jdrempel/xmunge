@@ -240,8 +240,40 @@ def localize_munge():
     pass
 
 
-def movie_munge():
-    pass
+def movie_munge(input_file: str, output_file: Path, debug: bool = False):
+    command = [
+        f"MovieMunge",
+        f"-input {input_file}",
+        f"-output {str(output_file)}",
+        f"-checkdate",
+    ]
+
+    if debug:
+        command.append("-debug")
+
+    logger = log.getLogger("main")
+
+    try:
+        _exec_wine(command)
+    except sp.CalledProcessError as err:
+        logger.error(
+            '%s failed with args "%s"; Status %d.',
+            command[0],
+            " ".join(command[1:]),
+            err.returncode,
+        )
+
+    try:
+        with open(f"MovieMunge.log", "r") as munge_log:
+            log_contents = str(munge_log.read())
+            if not (
+                search(r"0\s+Errors", log_contents)
+                and search(r"0\s+Warnings", log_contents)
+            ):
+                log_contents = f"[{input_file}]\n" + log_contents
+                logger.info(log_contents)
+    except FileNotFoundError as err:
+        logger.warning("Log file %s not found, continuing...", err.filename)
 
 
 def path_munge():

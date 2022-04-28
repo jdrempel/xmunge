@@ -45,16 +45,12 @@ The following is a list of known limitations as of the most recent update of thi
 - Shell munge is not implemented
 - Movie munge is not implemented
 - Sound munge is not implemented
-- Common munge is missing the following sub-munges:
-  - Sprite munge
-  - FPM munge
 - Non-English languages are not supported
 
 ## Roadmap
 
 These items are ordered by descending priority but may change.
 
-- Implement sprite and FPM munge operations
 - Implement Sound munge
 - Implement Load munge
 - Implement Shell munge

@@ -62,10 +62,10 @@ class CommonMunger(BaseMunger):
         fpm_source_dir = self.source_dir / "req" / "fpm"
         fpm_output_dir = Settings.output_dir / "FPM" / "COM"
         mkdir_p(fpm_output_dir)
-        common_files = [f"Common/MUNGED/{self.platform}/{f}" for f in ["core", "common", "ingame"]]
-        level_pack(
-            "*.req", fpm_source_dir, fpm_output_dir, common=common_files
-        )
+        common_files = [
+            f"Common/MUNGED/{self.platform}/{f}" for f in ["core", "common", "ingame"]
+        ]
+        level_pack("*.req", fpm_source_dir, fpm_output_dir, common=common_files)
 
     def _merge_localize_files(self) -> None:
         """
