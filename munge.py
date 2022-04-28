@@ -8,7 +8,14 @@ from pathlib import Path
 
 from utils.globals import Settings
 from utils.logs import setup_logging
-from utils.mungers import CommonMunger, LoadMunger, ShellMunger, SideMunger, SoundMunger, WorldMunger
+from utils.mungers import (
+    CommonMunger,
+    LoadMunger,
+    ShellMunger,
+    SideMunger,
+    SoundMunger,
+    WorldMunger,
+)
 from utils.validators import ArgumentValidator
 
 
@@ -136,7 +143,9 @@ if __name__ == "__main__":
     if munge_list["worlds"]:
         worlds_to_munge = munge_list["worlds"]
         if munge_list["worlds"] == "EVERYTHING":
-            worlds_to_munge = [i.name for i in Path("../Worlds").iterdir() if i.is_dir()]
+            worlds_to_munge = [
+                i.name for i in Path("../Worlds").iterdir() if i.is_dir()
+            ]
         for world in worlds_to_munge:
             munger = WorldMunger(world, Settings.platform)
             munger.run()
@@ -156,4 +165,3 @@ if __name__ == "__main__":
     ###############
 
     pass
-

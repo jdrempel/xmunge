@@ -6,6 +6,7 @@ authors = ["Jeremy Rempel <jeremy.rempel@usask.ca>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+black = "^22.3.0"
 
 [tool.poetry.dev-dependencies]
 

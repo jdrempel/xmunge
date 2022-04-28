@@ -16,8 +16,9 @@ def setup_logging(debug=False, platform="PC"):
     else:
         logger.setLevel(log.INFO)
 
-    formatter = log.Formatter(fmt="%(asctime)s [%(levelname)s]:  %(message)s",
-                              datefmt="%Y-%m-%d %H:%M:%S")
+    formatter = log.Formatter(
+        fmt="%(asctime)s [%(levelname)s]:  %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+    )
 
     log_filename = f"{platform}_MungeLog.txt"
     file_handler = log.FileHandler(log_filename, "w")

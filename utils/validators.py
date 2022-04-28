@@ -1,4 +1,3 @@
-
 class ArgumentValidator:
     """
     A utility class for validating command-line argument values.
@@ -15,8 +14,7 @@ class ArgumentValidator:
         "FRENCH",
         "GERMAN",
         "ITALIAN",
-        "JAPANESE"
-        "SPANISH",
+        "JAPANESE" "SPANISH",
         "UK",
     ]
 
@@ -28,14 +26,18 @@ class ArgumentValidator:
         Determines whether the platform supplied in the args is valid.
         :return: True if the platform is None or in the list of valid platform strings, False otherwise
         """
-        return self.args.platform is None or self.args.platform.upper() in self.platforms
+        return (
+            self.args.platform is None or self.args.platform.upper() in self.platforms
+        )
 
     def _validate_language(self):
         """
         Determines whether the language supplied in the args is valid.
         :return: True if the language is None or in the list of valid language strings, False otherwise
         """
-        return self.args.language is None or self.args.language.upper() in self.languages
+        return (
+            self.args.language is None or self.args.language.upper() in self.languages
+        )
 
     def validate_args(self):
         """

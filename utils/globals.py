@@ -35,4 +35,6 @@ class Settings:
         cls.output_dir = Path(f"../_LVL_{cls.platform}")
 
         cls.munge_args = f"-checkdate -continue -platform {cls.platform}"
-        cls.shader_munge_args = f"-continue -platform {cls.platform}"  # TODO why not checkdate?
+        cls.shader_munge_args = (
+            f"-continue -platform {cls.platform}"  # TODO why not checkdate?
+        )

@@ -66,7 +66,9 @@ class CommonMunger(BaseMunger):
         logger = logging.getLogger("main")
         logger.info("Merge localization files...")
         mkdir_p(munge_temp)
-        for item in list(localize_platform_path.iterdir()) + list(localize_path.iterdir()):
+        for item in list(localize_platform_path.iterdir()) + list(
+            localize_path.iterdir()
+        ):
             if not item.is_file():
                 continue
             if not item.suffix == ".cfg":
@@ -78,7 +80,13 @@ class CommonMunger(BaseMunger):
                 merged_file.write(contents)
                 logger.info("Merged %s", item.name)
 
-    def run(self, localize: bool = True, shaders: bool = True, sprites: bool = True, fpm: bool = True):
+    def run(
+        self,
+        localize: bool = True,
+        shaders: bool = True,
+        sprites: bool = True,
+        fpm: bool = True,
+    ):
         logger = logging.getLogger("main")
         logger.info("Munge Common...")
 
@@ -94,12 +102,25 @@ class CommonMunger(BaseMunger):
         munge("Config", "$*.hud", self.source_dir, self.munge_dir)
         munge("Font", "$*.fff", self.source_dir, self.munge_dir)
         munge("Texture", ["$*.tga", "$*.pic"], self.source_dir, self.munge_dir)
-        munge("Model", ["$effects/*.msh", "$MSHs/*.msh"], self.source_dir, self.munge_dir)
+        munge(
+            "Model", ["$effects/*.msh", "$MSHs/*.msh"], self.source_dir, self.munge_dir
+        )
         if shaders is True and self.platform != "PS2":
-            munge("Shader", ["shaders/*.xml", "shaders/*.vsfrag"], self.source_dir, self.munge_dir)
+            munge(
+                "Shader",
+                ["shaders/*.xml", "shaders/*.vsfrag"],
+                self.source_dir,
+                self.munge_dir,
+            )
 
         common_sound_path = _(self.source_dir / "Sound")
-        munge("Config", ["*.snd", "*.mus"], common_sound_path, self.munge_dir, hash_strings=True)
+        munge(
+            "Config",
+            ["*.snd", "*.mus"],
+            common_sound_path,
+            self.munge_dir,
+            hash_strings=True,
+        )
         for sfx in iglob(str(common_sound_path / "*.sfx")):
             print(sfx)
             soundfl_munge()  # TODO
@@ -115,16 +136,66 @@ class CommonMunger(BaseMunger):
             munge("Localize", "*.cfg", self.munge_temp_name, self.munge_dir)
             shutil.rmtree(self.munge_temp_name)
 
-        level_pack("core.req", self.source_dir, Settings.output_dir, self.munge_dir, write_files=["core", ])
-        level_pack("common.req", self.source_dir, Settings.output_dir, self.munge_dir, common=["core", ],
-                   write_files=["common", ])
-        level_pack("ingame.req", self.source_dir, Settings.output_dir, self.munge_dir,
-                   common=["core", "common"], write_files=["ingame", ])
-        level_pack("inshell.req", self.source_dir, Settings.output_dir, self.munge_dir,
-                   common=["core", "common"], write_files=["inshell", ])
-        level_pack("mission/*.req", self.source_dir, self.munge_dir, self.munge_dir,
-                   common=["core", "common", "ingame"], write_files=["core", ])
-        level_pack("mission.req", self.source_dir, Settings.output_dir, self.munge_dir, write_files=["core", ])
+        level_pack(
+            "core.req",
+            self.source_dir,
+            Settings.output_dir,
+            self.munge_dir,
+            write_files=[
+                "core",
+            ],
+        )
+        level_pack(
+            "common.req",
+            self.source_dir,
+            Settings.output_dir,
+            self.munge_dir,
+            common=[
+                "core",
+            ],
+            write_files=[
+                "common",
+            ],
+        )
+        level_pack(
+            "ingame.req",
+            self.source_dir,
+            Settings.output_dir,
+            self.munge_dir,
+            common=["core", "common"],
+            write_files=[
+                "ingame",
+            ],
+        )
+        level_pack(
+            "inshell.req",
+            self.source_dir,
+            Settings.output_dir,
+            self.munge_dir,
+            common=["core", "common"],
+            write_files=[
+                "inshell",
+            ],
+        )
+        level_pack(
+            "mission/*.req",
+            self.source_dir,
+            self.munge_dir,
+            self.munge_dir,
+            common=["core", "common", "ingame"],
+            write_files=[
+                "core",
+            ],
+        )
+        level_pack(
+            "mission.req",
+            self.source_dir,
+            Settings.output_dir,
+            self.munge_dir,
+            write_files=[
+                "core",
+            ],
+        )
 
         if fpm:
             self._munge_fpm()
@@ -202,8 +273,16 @@ class SideMunger(BaseMunger):
 
         if self.side != "Common":
             input_dirs = [self.munge_dir, sides_common_munge_dir, common_munge_dir]
-            common_files = [f"{common_munge_dir}/{file}" for file in ["core", "common", "ingame"]]
-            level_pack("req/*.req", self.source_dir, self.munge_dir, input_dir=input_dirs, common=common_files)
+            common_files = [
+                f"{common_munge_dir}/{file}" for file in ["core", "common", "ingame"]
+            ]
+            level_pack(
+                "req/*.req",
+                self.source_dir,
+                self.munge_dir,
+                input_dir=input_dirs,
+                common=common_files,
+            )
             level_pack("*.req", self.source_dir, self.output_dir, input_dir=input_dirs)
 
 
@@ -239,7 +318,7 @@ class WorldMunger(BaseMunger):
                 self.munge_dir,
                 output_file=wld_file.stem,
                 chunk_id="path",
-                ext="path"
+                ext="path",
             )
 
         munge("PathPlanning", "$*.pln", self.source_dir, self.munge_dir)
@@ -247,14 +326,45 @@ class WorldMunger(BaseMunger):
         munge("Config", "$*.combo", self.source_dir, self.munge_dir)
 
         world_munge("$*.sky", self.source_dir, self.munge_dir, chunk_id="sky")
-        world_munge("$*.fx", self.source_dir, self.munge_dir, chunk_id="fx", ext="envfx")
-        world_munge("$*.prp", self.source_dir, self.munge_dir, hash_strings=True, chunk_id="prp", ext="prop")
-        world_munge("$*.bnd", self.source_dir, self.munge_dir, hash_strings=True, chunk_id="bnd", ext="boundary")
+        world_munge(
+            "$*.fx", self.source_dir, self.munge_dir, chunk_id="fx", ext="envfx"
+        )
+        world_munge(
+            "$*.prp",
+            self.source_dir,
+            self.munge_dir,
+            hash_strings=True,
+            chunk_id="prp",
+            ext="prop",
+        )
+        world_munge(
+            "$*.bnd",
+            self.source_dir,
+            self.munge_dir,
+            hash_strings=True,
+            chunk_id="bnd",
+            ext="boundary",
+        )
 
-        munge("Config", ["$*.snd", "$*.mus", "$*.tsr"], _(self.source_dir / "Sound"), self.munge_dir, hash_strings=True)
+        munge(
+            "Config",
+            ["$*.snd", "$*.mus", "$*.tsr"],
+            _(self.source_dir / "Sound"),
+            self.munge_dir,
+            hash_strings=True,
+        )
 
-        world_munge("$*.lgt", self.source_dir, self.munge_dir, hash_strings=True, chunk_id="lght", ext="light")
-        world_munge("$*.pvs", self.source_dir, self.munge_dir, chunk_id="PORT", ext="povs")
+        world_munge(
+            "$*.lgt",
+            self.source_dir,
+            self.munge_dir,
+            hash_strings=True,
+            chunk_id="lght",
+            ext="light",
+        )
+        world_munge(
+            "$*.pvs", self.source_dir, self.munge_dir, chunk_id="PORT", ext="povs"
+        )
 
         common_munge_dir = _(Path(f"Common/MUNGED/{self.platform}"))
         worlds_common_munge_dir = _(Path(f"Worlds/Common/MUNGED/{self.platform}"))
@@ -263,15 +373,19 @@ class WorldMunger(BaseMunger):
 
         if self.world != "Common":
             input_dirs = [self.munge_dir, worlds_common_munge_dir, common_munge_dir]
-            common_files = [f"{common_munge_dir}/{file}" for file in ["core", "common", "ingame"]]
+            common_files = [
+                f"{common_munge_dir}/{file}" for file in ["core", "common", "ingame"]
+            ]
             for world in self.source_dir.glob("world*"):
                 level_pack(
                     "*.req",
                     world,
                     input_dir=input_dirs,
                     common=common_files,
-                    write_files=[f"{self.munge_dir}/MZ", ],
-                    relative_write=True
+                    write_files=[
+                        f"{self.munge_dir}/MZ",
+                    ],
+                    relative_write=True,
                 )
                 level_pack(
                     "*.mrq",
@@ -285,7 +399,7 @@ class WorldMunger(BaseMunger):
                     world,
                     output_dir=self.output_dir,
                     input_dir=input_dirs,
-                    common=common_files
+                    common=common_files,
                 )
 
             level_pack(
@@ -293,14 +407,14 @@ class WorldMunger(BaseMunger):
                 _(self.source_dir / "sky" / "REQ"),
                 self.output_dir,
                 input_dir=input_dirs,
-                common=common_files
+                common=common_files,
             )
             level_pack(
                 "*.req",
                 _(self.source_dir / "sky"),
                 self.output_dir,
                 input_dir=input_dirs,
-                common=common_files
+                common=common_files,
             )
 
 
@@ -314,7 +428,7 @@ if __name__ == "__main__":
         LoadMunger(platform),
         SoundMunger(platform),
         SideMunger("ALL", platform),
-        WorldMunger("YAV", platform)
+        WorldMunger("YAV", platform),
     ]
     for munger in mungers:
         munger.run()
