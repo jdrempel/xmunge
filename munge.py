@@ -127,7 +127,7 @@ if __name__ == "__main__":
 
     if munge_list["shell"]:
         munger = ShellMunger(Settings.platform)
-        munger.run()
+        munger.run(movies=munge_list["movies"])
 
     if munge_list["load"]:
         munger = LoadMunger(Settings.platform)
