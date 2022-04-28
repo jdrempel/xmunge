@@ -19,6 +19,6 @@ class AddmeMunger(BaseMunger):
 
         mkdir_p(addme_output_dir)
 
-        munge("Script", "addme.lua", self.source_dir, addme_output_dir, debug=True)
+        munge("Script", "addme.lua", self.source_dir, addme_output_dir)
 
         copy(addme_output_dir / "addme.script", Settings.output_dir)

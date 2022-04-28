@@ -4,6 +4,7 @@
 # The main entrypoint for the munge process
 import logging
 from argparse import ArgumentParser
+from os import remove
 from pathlib import Path
 from shutil import copytree, move
 
@@ -153,18 +154,12 @@ if __name__ == "__main__":
         munger = SoundMunger(Settings.platform, munge_sound_streams)
         munger.run()
 
-    if Settings.platform == "XBOX" and not args.no_xbox_copy:
-        pass
-
-    # Done!
-
-    ###############
-    # Munge addme #
-    ###############
-
     if munge_list["common"] or munge_list["addme"]:
         munger = AddmeMunger(Settings.platform)
         munger.run()
+
+    if Settings.platform == "XBOX" and not args.no_xbox_copy:
+        pass
 
     #########################################
     # Copy _LVL_platform to SWBF2 directory #
@@ -181,4 +176,5 @@ if __name__ == "__main__":
     copytree(copy_source, copy_dest, dirs_exist_ok=True)
 
     # Move addme.script from ABC/data/_LVL_PC/ up to just ABC/
+    remove(copy_dest.parent.parent / "addme.script")
     move(copy_dest / "addme.script", copy_dest.parent.parent)
