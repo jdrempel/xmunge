@@ -48,16 +48,12 @@ The following is a list of known limitations as of the most recent update of thi
 - Common munge is missing the following sub-munges:
   - Sprite munge
   - FPM munge
-- addme.lua munge is not implemented
-- Packed files are not automatically copied to the addon directory
 - Non-English languages are not supported
 
 ## Roadmap
 
 These items are ordered by descending priority but may change.
 
-- Implement addme.lua munge
-- Add automatic copying of packed files to the addon directory
 - Implement sprite and FPM munge operations
 - Implement Sound munge
 - Implement Load munge
