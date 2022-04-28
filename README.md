@@ -42,8 +42,6 @@ The following is a list of known limitations as of the most recent update of thi
 **xmunge** and discover a bug or missing functionality, please create an issue on GitHub.
 
 - Load munge is not implemented
-- Shell munge is not implemented
-- Movie munge is not implemented
 - Sound munge is not implemented
 - Non-English languages are not supported
 
@@ -53,8 +51,6 @@ These items are ordered by descending priority but may change.
 
 - Implement Sound munge
 - Implement Load munge
-- Implement Shell munge
-- Implement Movie munge
 - Add support for non-English languages
 - Add support for custom configuration via JSON or YAML
 - Add multi-threading
