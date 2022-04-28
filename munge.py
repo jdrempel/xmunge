@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # munge.py
 # jedimoose32
 #
@@ -112,7 +113,9 @@ if __name__ == "__main__":
 
         with open("../../.swbf2", "w") as swbf2_file:
             swbf2_file.write(str(gamedata_dir))
-            print(f"Saved {gamedata_dir} to the file .swbf2 in the BF2_ModTools root directory.")
+            print(
+                f"Saved {gamedata_dir} to the file .swbf2 in the BF2_ModTools root directory."
+            )
 
     ##########
     # Munge! #

@@ -7,6 +7,9 @@ from .base import BaseMunger
 
 
 class AddmeMunger(BaseMunger):
+    """
+    Handles munging of the addme.lua script.
+    """
 
     def __init__(self, platform="PC"):
         super().__init__("addme", platform)
