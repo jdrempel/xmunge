@@ -34,6 +34,7 @@ if __name__ == "__main__":
     parser.add_argument("--noxboxcopy", action="store_true", dest="no_xbox_copy")
 
     # "Add-on" arguments (for convenience)
+    parser.add_argument("--addme", action="store_true")
     parser.add_argument("--wine-prefix", nargs="?", type=str)
     parser.add_argument("-d", action="store_true", dest="debug_mode")
 
@@ -52,6 +53,8 @@ if __name__ == "__main__":
     munge_list.pop("platform")
     munge_list.pop("language")
     munge_list.pop("no_xbox_copy")
+    munge_list.pop("wine_prefix")
+    munge_list.pop("debug_mode")
     if any(munge_list.values()):
         munge_all = False
 
@@ -93,7 +96,7 @@ if __name__ == "__main__":
     ################################################################################
 
     try:
-        with open(".swbf2", "r") as swbf2_file:
+        with open("../.swbf2", "r") as swbf2_file:
             gamedata_dir = Path(swbf2_file.readline())
 
     except FileNotFoundError:
@@ -104,7 +107,7 @@ if __name__ == "__main__":
             input_dir = Path(input("Enter the path to your SWBF2 GameData folder: "))
             gamedata_dir = input_dir.resolve()
 
-        with open(".swbf2", "w") as swbf2_file:
+        with open("../.swbf2", "w") as swbf2_file:
             swbf2_file.write(str(gamedata_dir))
             print(f"Saved {gamedata_dir} to the file .swbf2 in this directory.")
 
@@ -156,5 +159,9 @@ if __name__ == "__main__":
     ###############
     # Munge addme #
     ###############
+
+    if munge_list["common"] or munge_list["addme"]:
+        munger = AddmeMunger(Settings.platform)
+        munger.run()
 
     pass

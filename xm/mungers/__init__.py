@@ -1,3 +1,4 @@
+from .addme import AddmeMunger
 from .common import CommonMunger
 from .load import LoadMunger
 from .shell import ShellMunger
