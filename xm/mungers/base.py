@@ -32,5 +32,3 @@ class BaseMunger(ABC):
             for file in files:
                 copy(file, self.munge_dir)
                 logger.info("Copied %s", file.name)
-
-

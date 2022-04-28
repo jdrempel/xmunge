@@ -38,7 +38,7 @@ class CommonMunger(BaseMunger):
         logger.info("Merge localization files...")
         mkdir_p(munge_temp)
         for item in list(localize_platform_path.iterdir()) + list(
-                localize_path.iterdir()
+            localize_path.iterdir()
         ):
             if not item.is_file():
                 continue
@@ -52,11 +52,11 @@ class CommonMunger(BaseMunger):
                 logger.info("Merged %s", item.name)
 
     def run(
-            self,
-            localize: bool = True,
-            shaders: bool = True,
-            sprites: bool = True,
-            fpm: bool = True,
+        self,
+        localize: bool = True,
+        shaders: bool = True,
+        sprites: bool = True,
+        fpm: bool = True,
     ):
         logger = logging.getLogger("main")
         logger.info("Munge Common...")
