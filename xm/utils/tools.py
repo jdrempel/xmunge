@@ -38,7 +38,7 @@ def _setup_wine() -> str:
     Settings
     :return: A string of the format: "[WINEPREFIX=<prefix-path> ]WINEPATH=<path-to-tools-bin> wine"
     """
-    current_dir = Path(".")
+    current_dir = Path("")
     tools_dir = current_dir / Settings.bin_path
     wine_str = ""
     if Settings.wine_prefix:

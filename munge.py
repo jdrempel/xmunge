@@ -6,17 +6,10 @@
 from argparse import ArgumentParser
 from pathlib import Path
 
-from utils.globals import Settings
-from utils.logs import setup_logging
-from utils.mungers import (
-    CommonMunger,
-    LoadMunger,
-    ShellMunger,
-    SideMunger,
-    SoundMunger,
-    WorldMunger,
-)
-from utils.validators import ArgumentValidator
+from xm.mungers import *
+from xm.utils.globals import Settings
+from xm.utils.logs import setup_logging
+from xm.utils.validators import ArgumentValidator
 
 
 if __name__ == "__main__":

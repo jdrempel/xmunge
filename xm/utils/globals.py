@@ -6,7 +6,7 @@ class Settings:
     platform = "PC"
 
     # Fixed paths
-    root_dir = Path("../..")
+    root_dir = Path("../../..")
     bin_path = Path("../../ToolsFL/bin")
 
     # Variable paths, will be set later as they depend on the platform or language
