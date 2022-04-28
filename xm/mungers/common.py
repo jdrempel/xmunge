@@ -16,14 +16,56 @@ class CommonMunger(BaseMunger):
 
     munge_temp_name = "MungeTemp"
 
+    sprite_sides = ["ALL", "CIS", "IMP", "REP"]
+
+    sprites_list = [
+        "all_sprite_soldier_snow",
+        "all_sprite_pilot",
+        "all_sprite_soldier",
+        "all_sprite_soldierjungle",
+        "cis_sprite_bdroid",
+        "cis_sprite_sbdroid",
+        "cis_sprite_droideka",
+        "imp_sprite_officer",
+        "imp_sprite_tiepilot",
+        "imp_sprite_stormtroopersnow",
+        "imp_sprite_stormtrooper",
+        "imp_sprite_atatpilot",
+        "imp_sprite_scout",
+        "rep_sprite_trooper",
+    ]
+
     def __init__(self, platform="PC"):
         super().__init__("Common", platform)
 
     def _munge_sprites(self):
-        pass
+        sprite_source_dir_base = self.source_dir.parent / "Sides"
+        for side_name in self.sprite_sides:
+            side_dir = _(sprite_source_dir_base / side_name / "MUNGED" / self.platform)
+            mkdir_p(side_dir)
+
+        for sprite_name in self.sprites_list:
+            sprite_side = sprite_name.split("_")[0].upper()
+            sprite_output_dir = _(
+                sprite_source_dir_base / sprite_side / "MUNGED" / self.platform
+            )
+            mkdir_p(sprite_output_dir)
+            munge(
+                "Texture",
+                f"sprites/{sprite_name}/output/packed/*.tga",
+                self.source_dir,
+                sprite_output_dir,
+                sprite=True,
+            )
 
     def _munge_fpm(self):
-        pass
+        fpm_source_dir = self.source_dir / "req" / "fpm"
+        fpm_output_dir = Settings.output_dir / "FPM" / "COM"
+        mkdir_p(fpm_output_dir)
+        common_files = [f"Common/MUNGED/{self.platform}/{f}" for f in ["core", "common", "ingame"]]
+        level_pack(
+            "*.req", fpm_source_dir, fpm_output_dir, common=common_files
+        )
 
     def _merge_localize_files(self) -> None:
         """

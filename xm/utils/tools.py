@@ -166,6 +166,7 @@ def munge(
     source_dir: Union[str, Path],
     output_dir: Union[str, Path],
     hash_strings: bool = False,
+    sprite: bool = False,
     debug: bool = False,
 ) -> None:
     """
@@ -175,6 +176,7 @@ def munge(
     :param source_dir: The directory from which to load un-processed source files
     :param output_dir: The directory in which to place the packed .lvl files
     :param hash_strings: (Optional) Flag determining whether strings in input files should be hashed during munge
+    :param sprite: (Optional) If True, set the -8bit and -maps 1 flag values on the munge application
     :param debug: (Optional) If True, run the munge application with -DEBUG set
     :return: None
     """
@@ -202,6 +204,9 @@ def munge(
 
     if hash_strings:
         command.append("-hashstrings")
+
+    if sprite:
+        command.append("-8bit -maps 1")
 
     if debug:
         command.append("-debug")
