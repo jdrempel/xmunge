@@ -65,3 +65,4 @@ These items are ordered by descending priority but may change.
 - Implement Movie munge
 - Add support for non-English languages
 - Add support for custom configuration via JSON or YAML
+- Add multi-threading

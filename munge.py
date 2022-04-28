@@ -2,13 +2,15 @@
 # jedimoose32
 #
 # The main entrypoint for the munge process
-
+import logging
 from argparse import ArgumentParser
 from pathlib import Path
+from shutil import copytree, move
 
 from xm.mungers import *
 from xm.utils.globals import Settings
 from xm.utils.logs import setup_logging
+from xm.utils.tools import mkdir_p
 from xm.utils.validators import ArgumentValidator
 
 
@@ -96,7 +98,7 @@ if __name__ == "__main__":
     ################################################################################
 
     try:
-        with open("../.swbf2", "r") as swbf2_file:
+        with open("../../.swbf2", "r") as swbf2_file:
             gamedata_dir = Path(swbf2_file.readline())
 
     except FileNotFoundError:
@@ -107,9 +109,9 @@ if __name__ == "__main__":
             input_dir = Path(input("Enter the path to your SWBF2 GameData folder: "))
             gamedata_dir = input_dir.resolve()
 
-        with open("../.swbf2", "w") as swbf2_file:
+        with open("../../.swbf2", "w") as swbf2_file:
             swbf2_file.write(str(gamedata_dir))
-            print(f"Saved {gamedata_dir} to the file .swbf2 in this directory.")
+            print(f"Saved {gamedata_dir} to the file .swbf2 in the BF2_ModTools root directory.")
 
     ##########
     # Munge! #
@@ -164,4 +166,19 @@ if __name__ == "__main__":
         munger = AddmeMunger(Settings.platform)
         munger.run()
 
-    pass
+    #########################################
+    # Copy _LVL_platform to SWBF2 directory #
+    #########################################
+
+    copy_source = Settings.output_dir
+    world_id = Path.cwd().parent.name.upper().split("_")[-1]
+    copy_dest = gamedata_dir / "addon" / world_id / "data" / f"_LVL_{Settings.platform}"
+
+    mkdir_p(copy_dest)
+
+    logger = logging.getLogger("main")
+    logger.info("Copying output files to SWBF2 GameData/addon/%s...", world_id)
+    copytree(copy_source, copy_dest, dirs_exist_ok=True)
+
+    # Move addme.script from ABC/data/_LVL_PC/ up to just ABC/
+    move(copy_dest / "addme.script", copy_dest.parent.parent)

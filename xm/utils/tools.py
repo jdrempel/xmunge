@@ -166,6 +166,7 @@ def munge(
     source_dir: Union[str, Path],
     output_dir: Union[str, Path],
     hash_strings: bool = False,
+    debug: bool = False,
 ) -> None:
     """
     Invokes <category>Munge.exe in Wine with the specified parameters
@@ -174,6 +175,7 @@ def munge(
     :param source_dir: The directory from which to load un-processed source files
     :param output_dir: The directory in which to place the packed .lvl files
     :param hash_strings: (Optional) Flag determining whether strings in input files should be hashed during munge
+    :param debug: (Optional) If True, run the munge application with -DEBUG set
     :return: None
     """
     inputs = input_files
@@ -200,6 +202,9 @@ def munge(
 
     if hash_strings:
         command.append("-hashstrings")
+
+    if debug:
+        command.append("-debug")
 
     logger = log.getLogger("main")
 
