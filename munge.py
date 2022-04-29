@@ -179,5 +179,6 @@ if __name__ == "__main__":
     copytree(copy_source, copy_dest, dirs_exist_ok=True)
 
     # Move addme.script from ABC/data/_LVL_PC/ up to just ABC/
-    remove(copy_dest.parent.parent / "addme.script")
+    if Path(copy_dest.parent.parent / "addme.script").exists():
+        remove(copy_dest.parent.parent / "addme.script")
     move(copy_dest / "addme.script", copy_dest.parent.parent)
