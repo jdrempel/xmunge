@@ -168,7 +168,7 @@ def munge(
     hash_strings: bool = False,
     sprite: bool = False,
     debug: bool = False,
-    **options
+    **options,
 ) -> None:
     """
     Invokes <category>Munge.exe in Wine with the specified parameters

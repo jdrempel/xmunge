@@ -27,7 +27,14 @@ class LoadMunger(BaseMunger):
         mkdir_p(_(self.munge_dir))
         self._copy_premunged_files()
 
-        munge("Config", "$*.cfg", self.source_dir, self.munge_dir, chunkid="load", ext="config")
+        munge(
+            "Config",
+            "$*.cfg",
+            self.source_dir,
+            self.munge_dir,
+            chunkid="load",
+            ext="config",
+        )
         munge("Texture", ["$*.tga", "$*.pic"], self.source_dir, self.munge_dir)
         munge("Model", "$*.msh", self.source_dir, self.munge_dir)
 
@@ -35,6 +42,13 @@ class LoadMunger(BaseMunger):
         mkdir_p(req_temp_dir)
 
         backdrop_dir = self.source_dir / "backdrops"
+
+        if not backdrop_dir.exists():
+            logger.error(
+                "Path %s does not exist - aborting Load munge!", backdrop_dir.resolve()
+            )
+            return
+
         all_files = []
         for backdrop in backdrop_dir.iterdir():
             if not backdrop.is_dir():
@@ -46,9 +60,17 @@ class LoadMunger(BaseMunger):
             all_files = tga_files + pic_files
             for file in all_files:
                 with open(req_temp_dir / f"{file.stem}.req", "w") as req_file:
-                    req_file.write(f"ucft{{ REQN {{ \"texture\" \"{file.stem}\" }} }}")
+                    req_file.write(f'ucft{{ REQN {{ "texture" "{file.stem}" }} }}')
 
-        level_pack("$*.req", req_temp_dir, self.munge_dir, self.munge_dir, common=[f"Common/MUNGED/{self.platform}/core.files", ])
+        level_pack(
+            "$*.req",
+            req_temp_dir,
+            self.munge_dir,
+            self.munge_dir,
+            common=[
+                f"Common/MUNGED/{self.platform}/core.files",
+            ],
+        )
 
         for item in iglob(f"{req_temp_dir}/*.*"):
             remove(item)
@@ -57,15 +79,23 @@ class LoadMunger(BaseMunger):
             if not backdrop.is_dir():
                 continue
             with open(req_temp_dir / f"{backdrop.name}.req", "w") as req_file:
-                req_file.write(f"ucft{{ REQN {{ \"lvl\"\n")
+                req_file.write(f'ucft{{ REQN {{ "lvl"\n')
                 for file in all_files:
-                    req_file.write(f"\"{file.stem}\"\n")
+                    req_file.write(f'"{file.stem}"\n')
                 req_file.write(f"}} }}")
 
         mkdir_p(_(self.output_dir))
 
         # NOTE: If this isn't working I think it's because the input_dir should be the temp dir
-        level_pack("$*.req", self.source_dir, self.output_dir, self.munge_dir, common=[f"Common/MUNGED/{self.platform}/core.files", ])
+        level_pack(
+            "$*.req",
+            self.source_dir,
+            self.output_dir,
+            self.munge_dir,
+            common=[
+                f"Common/MUNGED/{self.platform}/core.files",
+            ],
+        )
 
         rmtree(req_temp_dir)
         remove(req_temp_dir)
