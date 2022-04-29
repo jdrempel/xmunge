@@ -41,7 +41,6 @@ can be absolute or relative. The resolved directory must already exist. Once ent
 The following is a list of known limitations as of the most recent update of this document (28/04/22). If you are using
 **xmunge** and discover a bug or missing functionality, please create an issue on GitHub.
 
-- Load munge is not implemented
 - Sound munge is not implemented
 - Non-English languages are not supported
 
@@ -49,9 +48,8 @@ The following is a list of known limitations as of the most recent update of thi
 
 These items are ordered by descending priority but may change.
 
-- Implement Load munge
-- Implement Sound munge
 - Add cleaning
+- Implement Sound munge
 - Create a script that generates a new world from the template
 - Add support for non-English languages
 - Add support for custom configuration via JSON or YAML
