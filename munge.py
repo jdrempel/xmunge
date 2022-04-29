@@ -4,16 +4,15 @@
 #
 # The main entrypoint for the munge process
 import logging
-from argparse import ArgumentParser
 from os import remove
 from pathlib import Path
 from shutil import copytree, move
 
 from xm.mungers import *
+from xm.utils.args import build_actions_list, parse_args
 from xm.utils.globals import Settings
 from xm.utils.logs import setup_logging
 from xm.utils.tools import mkdir_p
-from xm.utils.validators import ArgumentValidator
 
 
 if __name__ == "__main__":
@@ -22,62 +21,11 @@ if __name__ == "__main__":
     # Parse arguments #
     ###################
 
-    parser = ArgumentParser()
+    args = parse_args()
 
-    # "Built-in" arguments (from old munge.bat)
-    parser.add_argument("--platform", nargs="?", type=str, default="PC")
-    parser.add_argument("--language", nargs="?", type=str)
-    parser.add_argument("--world", nargs="+", type=str, dest="worlds")
-    parser.add_argument("--side", nargs="+", type=str, dest="sides")
-    parser.add_argument("--load", action="store_true")
-    parser.add_argument("--sound", action="store_true")
-    parser.add_argument("--common", action="store_true")
-    parser.add_argument("--shell", action="store_true")
-    parser.add_argument("--movies", action="store_true")
-    parser.add_argument("--localize", action="store_true")
-    parser.add_argument("--noxboxcopy", action="store_true", dest="no_xbox_copy")
+    munge_list = build_actions_list(args)
 
-    # "Add-on" arguments (for convenience)
-    parser.add_argument("--addme", action="store_true")
-    parser.add_argument("--wine-prefix", nargs="?", type=str)
-    parser.add_argument("-d", action="store_true", dest="debug_mode")
-
-    args = parser.parse_args()
-
-    if args.wine_prefix:
-        Settings.wine_prefix = args.wine_prefix
-
-    validator = ArgumentValidator(args)
-    validator.validate_args()
-
-    Settings.set_platform(args.platform.upper())
-
-    munge_all = True
-    munge_list = dict(vars(args))
-    munge_list.pop("platform")
-    munge_list.pop("language")
-    munge_list.pop("no_xbox_copy")
-    munge_list.pop("wine_prefix")
-    munge_list.pop("debug_mode")
-    if any(munge_list.values()):
-        munge_all = False
-
-    # Setup logging
     setup_logging(debug=args.debug_mode, platform=args.platform)
-
-    ###################
-    # Post processing #
-    ###################
-
-    if munge_all:
-        munge_list["worlds"] = "EVERYTHING"
-        munge_list["sides"] = "EVERYTHING"
-        munge_list["load"] = True
-        munge_list["common"] = True
-        munge_list["shell"] = True
-        munge_list["movies"] = True
-        munge_list["localize"] = True
-        munge_list["sound"] = True
 
     # Language stuff
     if args.language is not None:
