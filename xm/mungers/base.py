@@ -1,7 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
-from shutil import copy
+from shutil import copy, copytree
 
 from xm.utils.tools import get_dir_no_case as _
 
@@ -25,10 +25,13 @@ class BaseMunger(ABC):
         pre_munged_dir = _(self.source_dir / "munged")
         if not pre_munged_dir.exists():
             return
-        files = list(pre_munged_dir.iterdir())
-        if len(files) > 0:
-            logger = logging.getLogger("main")
-            logger.info("Copying premunged files from %s", pre_munged_dir)
-            for file in files:
-                copy(file, self.munge_dir)
-                logger.info("Copied %s", file.name)
+        logger = logging.getLogger("main")
+        logger.info("Copying premunged files from %s", pre_munged_dir)
+        copytree(pre_munged_dir, self.munge_dir.parent, dirs_exist_ok=True)
+        # files = list(pre_munged_dir.iterdir())
+        # if len(files) > 0:
+        #     logger = logging.getLogger("main")
+        #     logger.info("Copying premunged files from %s", pre_munged_dir)
+        #     for file in files:
+        #         copy(file, self.munge_dir)
+        #         logger.info("Copied %s", file.name)

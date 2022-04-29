@@ -17,8 +17,13 @@ class ShellMunger(BaseMunger):
         self.movies_output_dir = Settings.output_dir / "Movies"
 
     def _munge_movies(self):
-        munge("Config", "*.mcfg", _(self.source_dir / "movies"), self.munge_dir)
-        mlst_dir = _(self.source_dir / self.platform)
+        movies_dir = _(self.source_dir / "movies")
+        munge("Config", "*.mcfg", movies_dir, self.munge_dir)
+        mlst_dir = _(movies_dir / self.platform)
+        if not mlst_dir.exists():
+            logger = logging.getLogger("main")
+            logger.error("Movies directory %s does not exist - skipping movie munge!", mlst_dir)
+            return
         for mlst_file in mlst_dir.iterdir():
             movie_munge(
                 mlst_file.name,
