@@ -49,8 +49,10 @@ The following is a list of known limitations as of the most recent update of thi
 
 These items are ordered by descending priority but may change.
 
-- Implement Sound munge
 - Implement Load munge
+- Implement Sound munge
+- Add cleaning
+- Create a script that generates a new world from the template
 - Add support for non-English languages
 - Add support for custom configuration via JSON or YAML
 - Add multi-threading

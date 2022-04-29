@@ -168,6 +168,7 @@ def munge(
     hash_strings: bool = False,
     sprite: bool = False,
     debug: bool = False,
+    **options
 ) -> None:
     """
     Invokes <category>Munge.exe in Wine with the specified parameters
@@ -207,6 +208,9 @@ def munge(
 
     if sprite:
         command.append("-8bit -maps 1")
+
+    for key, val in options.items():
+        command.append(f"-{key} {val}")
 
     if debug:
         command.append("-debug")
