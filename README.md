@@ -43,6 +43,7 @@ The following is a list of known limitations as of the most recent update of thi
 
 - Sound munge is not implemented
 - Non-English languages are not supported
+- Xbox file copy is not supported
 
 ## Roadmap
 

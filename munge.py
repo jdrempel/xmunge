@@ -10,6 +10,7 @@ from shutil import copytree, move
 
 from xm.mungers import *
 from xm.utils.args import build_actions_list, parse_args
+from xm.utils.dirs import get_swbf2_path, get_world_id
 from xm.utils.globals import Settings
 from xm.utils.logs import setup_logging
 from xm.utils.tools import mkdir_p
@@ -47,23 +48,7 @@ if __name__ == "__main__":
     # Get SWBF2 GameData directory from file if it exists, otherwise prompt for it #
     ################################################################################
 
-    try:
-        with open("../../.swbf2", "r") as swbf2_file:
-            gamedata_dir = Path(swbf2_file.readline())
-
-    except FileNotFoundError:
-        input_dir = Path(input("Enter the path to your SWBF2 GameData folder: "))
-        gamedata_dir = input_dir.resolve()
-        while not gamedata_dir.exists():
-            print(f"The path {gamedata_dir} does not exist.")
-            input_dir = Path(input("Enter the path to your SWBF2 GameData folder: "))
-            gamedata_dir = input_dir.resolve()
-
-        with open("../../.swbf2", "w") as swbf2_file:
-            swbf2_file.write(str(gamedata_dir))
-            print(
-                f"Saved {gamedata_dir} to the file .swbf2 in the BF2_ModTools root directory."
-            )
+    gamedata_dir = get_swbf2_path()
 
     ##########
     # Munge! #
@@ -117,7 +102,7 @@ if __name__ == "__main__":
     #########################################
 
     copy_source = Settings.output_dir
-    world_id = Path.cwd().parent.name.upper().split("_")[-1]
+    world_id = get_world_id()
     copy_dest = gamedata_dir / "addon" / world_id / "data" / f"_LVL_{Settings.platform}"
 
     mkdir_p(copy_dest)

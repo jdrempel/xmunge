@@ -31,7 +31,7 @@ def parse_args(clean: bool = False) -> Namespace:
 
     args = parser.parse_args()
 
-    if args.wine_prefix:
+    if not clean and args.wine_prefix:
         Settings.wine_prefix = args.wine_prefix
 
     validator = ArgumentValidator(args)
@@ -47,11 +47,14 @@ def build_actions_list(args: Namespace) -> dict[Any]:
     action_list = dict(vars(args))
     action_list.pop("platform")
     action_list.pop("language")
-    action_list.pop("no_xbox_copy")
-    action_list.pop("wine_prefix")
+    if hasattr(action_list, "no_xbox_copy"):
+        action_list.pop("no_xbox_copy")
+    if hasattr(action_list, "wine_prefix"):
+        action_list.pop("wine_prefix")
     action_list.pop("debug_mode")
     if any(action_list.values()):
         action_all = False
+        action_list["all"] = False
 
     if action_all:
         action_list["worlds"] = "EVERYTHING"
@@ -62,5 +65,6 @@ def build_actions_list(args: Namespace) -> dict[Any]:
         action_list["movies"] = True
         action_list["localize"] = True
         action_list["sound"] = True
+        action_list["all"] = True
 
     return action_list
