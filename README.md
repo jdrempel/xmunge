@@ -49,7 +49,6 @@ The following is a list of known limitations as of the most recent update of thi
 
 These items are ordered by descending priority but may change.
 
-- Add cleaning
 - Implement Sound munge
 - Create a script that generates a new world from the template
 - Add support for non-English languages
