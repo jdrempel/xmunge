@@ -105,6 +105,7 @@ class CommonMunger(BaseMunger):
 
         mkdir_p(Settings.output_dir)
         mkdir_p(self.munge_dir)
+        self._copy_premunged_files()
 
         munge("Odf", "$*.odf", self.source_dir, self.munge_dir)
         munge("Config", "$*.fx", self.source_dir, self.munge_dir)
