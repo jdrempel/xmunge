@@ -197,18 +197,12 @@ class CommonMunger(BaseMunger):
             self.munge_dir,
             self.munge_dir,
             common=["core", "common", "ingame"],
-            write_files=[
-                "core",
-            ],
         )
         level_pack(
             "mission.req",
             self.source_dir,
             Settings.output_dir,
             self.munge_dir,
-            write_files=[
-                "core",
-            ],
         )
 
         if fpm:
