@@ -1,5 +1,6 @@
 # Contains helper functions for comparing the contents of two directories
 
+from argparse import ArgumentParser
 from difflib import Differ
 from filecmp import dircmp
 from pathlib import Path
@@ -22,15 +23,15 @@ def diff_directories(a: str, b: str):
         pprint(d.diff_files)
         for file in d.diff_files:
             a_path, b_path = Path(a), Path(b)
-            if file.rsplit('.', 1)[0].lower() in ['lvl']:
-                diff_binary_files(a_path / file, b_path / file)
-            else:
+            try:
                 diff_text_files(a_path / file, b_path / file)
+            except UnicodeDecodeError:
+                diff_binary_files(a_path / file, b_path / file)
 
     return len(d.left_only) + len(d.right_only) + len(d.diff_files) > 0
 
 
-def _diff_files(a: str, b: str):
+def diff_text_files(a: str, b: str):
     d = Differ()
 
     with open(a, 'r') as file_a:
@@ -41,11 +42,7 @@ def _diff_files(a: str, b: str):
 
     diff = list(d.compare(a_lines, b_lines))
     result = list(filter(lambda x: x[0] in ['+', '-', '?'], diff))
-    return result
 
-
-def diff_text_files(a: str, b: str):
-    result = _diff_files(a, b)
     print(f'File {a} vs {b}:')
     for line in [line.strip('\n') for line in result]:
         print(line)
@@ -53,6 +50,32 @@ def diff_text_files(a: str, b: str):
 
 
 def diff_binary_files(a: str, b: str):
-    result = _diff_files(a, b)
-    print(f'Binary files {a} and {b} differ.')
-    return len(result) > 0
+
+    a_size = Path(a).stat().st_size
+    b_size = Path(b).stat().st_size
+
+    if a_size != b_size:
+        print(f'Binary files {a} and {b} differ.')
+        return True
+
+    with open(a, 'rb') as file_a:
+        a_bytes = file_a.read()
+
+    with open(b, 'rb') as file_b:
+        b_bytes = file_b.read()
+
+    if a_bytes != b_bytes:
+        print(f'Binary files {a} and {b} differ.')
+        return True
+
+    return False
+
+
+if __name__ == "__main__":
+    parser = ArgumentParser()
+    parser.add_argument('a', type=str)
+    parser.add_argument('b', type=str)
+
+    args = parser.parse_args()
+
+    diff_directories(args.a, args.b)
