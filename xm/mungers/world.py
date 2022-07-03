@@ -104,7 +104,7 @@ class WorldMunger(BaseMunger):
                     input_dir=input_dirs,
                     common=common_files,
                     write_files=[
-                        f"{self.munge_dir}/MZ",
+                        f"{self.munge_dir}/mz",
                     ],
                     relative_write=True,
                 )
@@ -113,7 +113,7 @@ class WorldMunger(BaseMunger):
                     world,
                     output_dir=self.munge_dir,
                     input_dir=input_dirs,
-                    common=common_files + [f"{self.munge_dir}/MZ"],
+                    common=common_files + [f"{self.munge_dir}/mz"],
                 )
                 level_pack(
                     "*.req",
