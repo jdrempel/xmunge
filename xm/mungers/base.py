@@ -27,7 +27,7 @@ class BaseMunger(ABC):
             return
         logger = logging.getLogger("main")
         logger.info("Copying premunged files from %s", pre_munged_dir)
-        copytree(pre_munged_dir, self.munge_dir.parent, dirs_exist_ok=True)
+        copytree(pre_munged_dir, self.munge_dir, dirs_exist_ok=True)
         # files = list(pre_munged_dir.iterdir())
         # if len(files) > 0:
         #     logger = logging.getLogger("main")
