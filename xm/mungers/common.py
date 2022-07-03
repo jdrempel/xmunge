@@ -89,7 +89,7 @@ class CommonMunger(BaseMunger):
             contents = ""
             with open(item, "r") as source_file:
                 contents = source_file.read()
-            with open(munge_temp / item.name.title(), "a") as merged_file:
+            with open(munge_temp / item.name.lower(), "a") as merged_file:
                 merged_file.write(contents)
                 logger.info("Merged %s", item.name)
 
@@ -105,6 +105,7 @@ class CommonMunger(BaseMunger):
 
         mkdir_p(Settings.output_dir)
         mkdir_p(self.munge_dir)
+        self._copy_premunged_files()
 
         munge("Odf", "$*.odf", self.source_dir, self.munge_dir)
         munge("Config", "$*.fx", self.source_dir, self.munge_dir)
